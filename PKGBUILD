@@ -16,7 +16,7 @@ build() {
     npm install -g pnpm --prefix="$srcdir/.pnpm"
     export PATH="$srcdir/.pnpm/bin:$PATH"
     pnpm install --frozen-lockfile
-    pnpm tauri build -b deb
+    pnpm tauri build --no-bundle
 }
 
 package() {
