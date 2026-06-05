@@ -1,6 +1,6 @@
 # ヰnote
 
-[English](docs/Readme-En.md)<br>[日本語](docs/Readme-Ja.md)
+[English](Docs/Readme-En.md)<br>[日本語](Docs/Readme-Ja.md)
 
 <!-- markdownlint-disable -->
 <div align="center">
