@@ -1,0 +1,41 @@
+name: Build Arch Linux Package
+
+on:
+  push:
+    branches:
+      - linux-support
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Install build dependencies
+        run: |
+          pacman -Syu --noconfirm --needed base-devel git nodejs npm rust pnpm
+          # 创建一个非 root 用户，因为 makepkg 不允许以 root 运行
+          useradd -m builduser
+          chown -R builduser:builduser .
+          echo "builduser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build package
+        run: |
+          # 修正权限
+          chown -R builduser:builduser .
+          # 以 builduser 身份运行 makepkg
+          sudo -u builduser makepkg -s --noconfirm
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: note-app-arch-package
+          path: |
+            *.pkg.tar.zst
