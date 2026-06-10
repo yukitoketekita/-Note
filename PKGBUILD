@@ -11,8 +11,7 @@ source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/APP.tar.gz")
 sha256sums=('SKIP')
 
 build() {
-    cd "$srcdir/-Note-APP"
-    sed -i 's/"identifier": *"[^"]*"/"identifier": "com.note.ipad"/' src-tauri/tauri.conf.json
+    cd "$startdir"
     npm install -g pnpm --prefix="$srcdir/.pnpm"
     export PATH="$srcdir/.pnpm/bin:$PATH"
     pnpm install --frozen-lockfile
@@ -20,7 +19,7 @@ build() {
 }
 
 package() {
-    cd "$srcdir/-Note-APP"
+    cd "$startdir"
     install -Dm755 "src-tauri/target/release/ipad" "$pkgdir/usr/bin/note-app"
     install -Dm644 "src-tauri/icons/icon.png" "$pkgdir/usr/share/icons/hicolor/256x256/apps/note-app.png"
     mkdir -p "$pkgdir/usr/share/applications"

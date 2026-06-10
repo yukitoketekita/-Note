@@ -344,7 +344,7 @@ textarea,
 }
 
 .note-list-item {
-  width: 100%;
+  flex: 1;
   min-height: 23px;
   padding: 3px 6px;
   border: 1px solid transparent;
@@ -362,8 +362,14 @@ textarea,
     color 120ms ease;
 }
 
-.note-list-item:hover {
-  border-color: transparent;
+.note-list-item-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 2px;
+}
+
+.note-list-item-wrapper:hover {
   background: linear-gradient(
     90deg,
     rgba(255, 245, 179, 0.08),
@@ -371,10 +377,36 @@ textarea,
   );
 }
 
-.note-list-item.active {
+.note-list-item-wrapper.active {
   border-color: rgba(108, 188, 243, 0.58);
   color: var(--ink);
   background: rgba(214, 238, 255, 0.72);
+}
+
+.note-delete-btn {
+  flex: 0 0 auto;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.note-list-item-wrapper:hover .note-delete-btn {
+  display: flex;
+}
+
+.note-delete-btn:hover {
+  color: #8d2940;
+  background: rgba(255, 220, 226, 0.42);
 }
 
 .note-list-item:disabled {
@@ -652,6 +684,49 @@ textarea,
   border-radius: 10px;
   color: #8d2940;
   background: rgba(255, 242, 246, 0.78);
+}
+
+.notes-save-path {
+  display: flex;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
+  margin-bottom: 6px;
+}
+
+.notes-save-path-input {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 5px;
+  border: 1px solid rgba(116, 164, 203, 0.24);
+  border-radius: 4px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.44);
+  font-size: 10px;
+  font-family: Consolas, "Microsoft YaHei UI", monospace;
+  outline: none;
+  cursor: default;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notes-save-path-btn {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border: 1px solid rgba(108, 188, 243, 0.32);
+  border-radius: 4px;
+  color: var(--soft-ink);
+  background: rgba(232, 247, 255, 0.52);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.notes-save-path-btn:hover {
+  border-color: var(--sky);
+  background: rgba(214, 238, 255, 0.78);
 }
 
 @media (max-width: 700px) {

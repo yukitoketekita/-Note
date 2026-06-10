@@ -1,3 +1,5 @@
+mod config;
+
 use std::{
     collections::HashMap,
     fs, io,
@@ -245,33 +247,8 @@ fn open_note(path: String) -> Result<OpenedDocument, String> {
     read_document(&note_path)
 }
 
-// Keeps runtime Notes outside src-tauri during development to avoid rebuild loops.
-fn notes_dir_path() -> Result<PathBuf, String> {
-    let current_dir =
-        std::env::current_dir().map_err(|error| format!("Failed to read current directory: {error}"))?;
-    let notes_base_dir = if current_dir
-        .file_name()
-        .and_then(|name| name.to_str())
-        .is_some_and(|name| name == "src-tauri")
-    {
-        current_dir
-            .parent()
-            .map(Path::to_path_buf)
-            .unwrap_or_else(|| current_dir.clone())
-    } else {
-        current_dir
-    };
-
-    Ok(notes_base_dir.join("Notes"))
-}
-
-// Ensures that the Notes directory exists.
 fn ensure_notes_dir() -> Result<PathBuf, String> {
-    let notes_dir = notes_dir_path()?;
-
-    fs::create_dir_all(&notes_dir).map_err(|error| format!("Failed to create Notes directory: {error}"))?;
-
-    Ok(notes_dir)
+    config::ensure_notes_dir()
 }
 
 // Reads Markdown file entries for the sidebar.
@@ -473,6 +450,50 @@ fn titlebar_start_dragging(window: WebviewWindow) -> Result<(), String> {
     window
         .start_dragging()
         .map_err(|error| format!("Failed to start window drag: {error}"))
+}
+
+#[tauri::command]
+// Returns the current notes directory path.
+fn get_notes_dir() -> Result<String, String> {
+    config::notes_dir_path().map(|path| path.display().to_string())
+}
+
+#[tauri::command]
+// Sets a custom notes directory and persists it.
+fn set_notes_dir(path: String) -> Result<(), String> {
+    let dir = PathBuf::from(&path);
+    if !dir.is_absolute() {
+        return Err("The notes directory path must be absolute.".to_string());
+    }
+
+    // Ensure the directory exists
+    fs::create_dir_all(&dir)
+        .map_err(|error| format!("Failed to create directory: {error}"))?;
+
+    let mut config = config::read_config();
+    config.notes_dir = Some(path);
+    config::write_config(&config)
+}
+
+#[tauri::command]
+// Deletes a note file from disk.
+fn delete_note(path: String) -> Result<(), String> {
+    let note_path = PathBuf::from(path);
+    if !note_path.exists() {
+        return Err("File does not exist.".to_string());
+    }
+    
+    fs::remove_file(&note_path)
+        .map_err(|error| format!("Failed to delete file: {error}"))
+}
+
+#[tauri::command]
+// Opens a folder picker so the user can choose where notes are stored.
+fn pick_notes_dir() -> Result<Option<String>, String> {
+    let path = rfd::FileDialog::new()
+        .set_title("Select Notes Directory")
+        .pick_folder();
+    Ok(path.map(|p| p.display().to_string()))
 }
 
 fn open_quick_note_window(app: &tauri::AppHandle) {
@@ -724,7 +745,11 @@ pub fn run() {
             titlebar_toggle_maximize,
             titlebar_minimize,
             titlebar_close,
-            titlebar_start_dragging
+            titlebar_start_dragging,
+            get_notes_dir,
+            set_notes_dir,
+            delete_note,
+            pick_notes_dir
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
